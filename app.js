@@ -1,8 +1,13 @@
-const path = require("path");
+const fs = require('fs');
+const path = require('path');
 const express = require("express");
 const bodyParser = require("body-parser");
-
+const mongoose = require('mongoose');
 const youtubeRoutes = require("./routes/youtube");
+
+const username = encodeURIComponent("maestrodb");
+const password = encodeURIComponent("Maestro@123");
+const uri = `mongodb+srv://${username}:${password}@maestro.dqc9ifa.mongodb.net/?retryWrites=true&w=majority`;
 
 const app = express();
 
@@ -26,4 +31,31 @@ app.use((req, res, next) => {
 
 app.use("/api/youtube", youtubeRoutes);
 
-module.exports = app;
+app.use((req, res, next) => {
+  const error = new HttpError('Could not find this route.', 404);
+  throw error;
+});
+
+app.use((error, req, res, next) => {
+  if (req.file) {
+    fs.unlink(req.file.path, err => {
+      console.log(err);
+    });
+  }
+  if (res.headerSent) {
+    return next(error);
+  }
+  res.status(error.code || 500);
+  res.json({ message: error.message || 'An unknown error occurred!' });
+});
+
+mongoose
+  .connect(uri)
+  .then(() => {
+    app.listen(8000, function() {
+      console.log("Server is running on port " + 8000);
+    });
+  })
+  .catch(err => {
+    console.log(err);
+  });
