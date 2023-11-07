@@ -16,5 +16,6 @@
     "google-auth-library": "^9.2.0",
     "googleapis": "^128.0.0",
     "serve-index": "^1.9.1"
-  }
+  },
+  "proxy": "http://localhost:3000"
 }

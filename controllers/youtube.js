@@ -22,9 +22,8 @@ exports.getSearch = async (req, res, next) => {
         });
 
         const playlistId = searchPlaylist.data.items[0].id.playlistId;
-        console.log(playlistId)
         const playlistItems = await youtube.playlistItems.list({
-            part: "contentDetails",
+            part: ["snippet", "contentDetails"],
             playlistId: playlistId,
             maxResults: 50
         });
@@ -32,9 +31,14 @@ exports.getSearch = async (req, res, next) => {
         // To get the next page
         // const nextPageToken = playlistItems.data.nextPageToken;
 
-        const videoLinks = playlistItems.data.items.map((item) => `https://www.youtube.com/watch?v=${item.contentDetails.videoId}&list=${playlistId}`);
-        // console.log(videoLinks);
-        res.send(videoLinks);
+        const videoLinks = playlistItems.data.items.map((item) => {
+            return {
+                title: item.snippet.title,
+                videoId: item.contentDetails.videoId
+            }
+        });
+        // console.log(playlistItems.data.items);
+        res.json(videoLinks);
 
     } catch (err) {
         next(err);
