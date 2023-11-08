@@ -18,18 +18,16 @@ exports.createVideo = (req, res, next) => {
       });
     })
     .catch(error => {
-      console.log(error)
       res.status(500).json({
-        message: "Creating a video failed!"
+        message: "Creating a video failed!",
+        error: error.message
       });
     });
 };
 
 exports.getVideos = async (req, res, next) => {
   const courseId = req.body.courseId;
-  console.log('Searching for videos with courseId:', courseId);
   const videos = await Video.find({courseId: courseId});
-  console.log(videos);
   try {
     if (!videos) {
       const error = new Error('Could not find videos.');
