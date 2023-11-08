@@ -3,7 +3,10 @@ const path = require('path');
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require('mongoose');
+
 const youtubeRoutes = require("./routes/youtube");
+const courseRoutes = require("./routes/course");
+const videoRoutes = require("./routes/video");
 
 const username = encodeURIComponent("maestrodb");
 const password = encodeURIComponent("Maestro@123");
@@ -30,6 +33,8 @@ app.use((req, res, next) => {
 });
 
 app.use("/api/youtube", youtubeRoutes);
+app.use("/api/course", courseRoutes);
+app.use("/api/video", videoRoutes);
 
 app.use((req, res, next) => {
   const error = new HttpError('Could not find this route.', 404);
