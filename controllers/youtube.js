@@ -83,10 +83,8 @@ exports.getSearch = async (req, res, next) => {
                 }
             }));
 
-            // console.log(playlistItems.data.items);
             res.json(videoLinks);
         } catch (error) {
-            // Handle errors
             if (error.response) {
                 console.error('Response error:', error.response.data);
                 console.error('Status code:', error.response.status);
@@ -101,4 +99,3 @@ exports.getSearch = async (req, res, next) => {
         next(err);
     }
 };
-
