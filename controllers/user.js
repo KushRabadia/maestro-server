@@ -6,6 +6,7 @@ const sgMail = require("@sendgrid/mail");
 
 const User = require("../models/user");
 
+const MAESTRO_AI_JWT_SECRET = process.env.MAESTRO_AI_JWT_SECRET;
 const sgMailApiKey = process.env.SG_MAIL_API_KEY;
 sgMail.setApiKey(sgMailApiKey);
 
@@ -49,7 +50,7 @@ exports.createUser = async (req, res, next) => {
           email: email,
           userId: result._id.toString(),
         },
-        "wallgatekushrabadiawallgatekushrabadia",
+        MAESTRO_AI_JWT_SECRET,
         { expiresIn: "1h" }
       );
       delete user.password;
@@ -115,7 +116,7 @@ exports.loginUser = async (req, res, next) => {
         email: email,
         userId: user._id.toString(),
       },
-      process.env.MAESTRO_AI_JWT_SECRET,
+      MAESTRO_AI_JWT_SECRET,
       { expiresIn: "1h" }
     );
     delete user.password;
@@ -163,7 +164,7 @@ exports.loginUserSocial = async (req, res, next) => {
         email: email,
         userId: user._id.toString(),
       },
-      "wallgatekushrabadiawallgatekushrabadia",
+      MAESTRO_AI_JWT_SECRET,
       { expiresIn: "1h" }
     );
 
