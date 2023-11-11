@@ -42,8 +42,11 @@ exports.createUser = async (req, res, next) => {
         throw err;
       }
       token = buffer.toString("hex");
+      // this is been used for email verification
       user.token = token;
       const result = await user.save();
+
+      //this is been used for authentication
       token = jwt.sign(
         {
           email: email,
@@ -59,24 +62,52 @@ exports.createUser = async (req, res, next) => {
         .json({ message: "User created!", token: token, user: user });
     });
 
-    // const msg = {
-    //   to: email,
-    //   from: "welcome@maestro.ai",
-    //   template_id:"d-ad24a76b4829443c9faf2359e6290324",
-    //   dynamicTemplateData: {
-    //     name: name.split(" ")[0],
-    //     token: token
-    //   },
-    // }
-    // sgMail
-    // .send(msg)
-    // .then((response) => {
-    //   console.log(response[0].statusCode)
-    //   console.log(response[0].headers)
-    // })
-    // .catch((error) => {
-    //   throw error;
-    // })
+    const msg = {
+      to: email,
+      from: "welcome@maestro.ai",
+      template_id:"d-ad24a76b4829443c9faf2359e6290324",
+      dynamicTemplateData: {
+        name: name.split(" ")[0],
+        token: user.token
+      },
+    }
+    sgMail
+    .send(msg)
+    .then((response) => {
+      console.log(response[0].statusCode)
+      console.log(response[0].headers)
+    })
+    .catch((error) => {
+      throw error;
+    })
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
+exports.details = async (req, res, next) => {
+  const userId = req.userId;
+  try {
+    let user = await User.findOne({ _id: userId });
+    if (!user) {
+      const error = new Error('User could not be found.');
+      error.statusCode = 401;
+      throw error;
+    }
+    user.password=undefined;
+    user.token=undefined;
+    const refreshedToken = jwt.sign(
+      {
+        email: user.email,
+        userId: user._id.toString(),
+      },
+      MAESTRO_AI_JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+    res.status(200).json({ token: refreshedToken, user: user });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
@@ -185,7 +216,6 @@ exports.verify = async (req, res, next) => {
   try {
     const user = await User.findOne(
       { _id: userId },
-      { orders: 0, password: 0 }
     );
     if (!user) {
       const error = new Error("User could not be found.");
