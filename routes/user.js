@@ -34,4 +34,6 @@ router.post('/login/social', userController.loginUserSocial);
 
 router.get('/verify/:token', isAuth, userController.verify);
 
+router.put('/update', isAuth, userController.update);
+
 module.exports = router;

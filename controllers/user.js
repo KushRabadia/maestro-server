@@ -15,7 +15,6 @@ exports.createUser = async (req, res, next) => {
   const email = req.body.email;
   const name = req.body.name;
   const password = req.body.password;
-  console.log(req.body);
   try {
     if (!errors.isEmpty()) {
       const error = new Error(errors.array()[0].msg);
@@ -53,8 +52,8 @@ exports.createUser = async (req, res, next) => {
         MAESTRO_AI_JWT_SECRET,
         { expiresIn: "1h" }
       );
-      delete user.password;
-      delete user.token;
+      user.password=undefined;
+      user.token=undefined;
       res
         .status(201)
         .json({ message: "User created!", token: token, user: user });
@@ -89,7 +88,6 @@ exports.createUser = async (req, res, next) => {
 exports.loginUser = async (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
-  console.log(req.body);
 
   try {
     const user = await User.findOne({ email: email });
@@ -119,7 +117,7 @@ exports.loginUser = async (req, res, next) => {
       MAESTRO_AI_JWT_SECRET,
       { expiresIn: "1h" }
     );
-    delete user.password;
+    user.password=undefined;
     res
       .status(200)
       .json({ message: "User logged in!", token: token, user: user });
@@ -205,6 +203,37 @@ exports.verify = async (req, res, next) => {
     await user.save();
     user.token = undefined;
     res.status(200).json({ message: "Verification success!", user: user });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
+exports.update = async (req, res, next) => {
+  const userId = req.userId;
+  try {
+    let user = await User.findOne({ _id: userId });
+    if (!user) {
+      const error = new Error('User could not be found.');
+      error.statusCode = 401;
+      throw error;
+    }
+    user.name = req.body.name ? req.body.name : user.name;
+    user.email = req.body.email ? req.body.email : user.email;
+    user.address = req.body.address ? req.body.address : user.address;
+    user.city = req.body.city ? req.body.city : user.city;
+    user.country = req.body.country ? req.body.country : user.country;
+    user.dob = req.body.dob ? req.body.dob : user.dob;
+    user.phone = req.body.phone ? req.body.phone : user.phone;
+    user.imageUrl = req.body.imageUrl ? req.body.imageUrl : user.imageUrl;
+    user.courses = req.body.courses ? req.body.courses : user.courses;
+    user.courses = req.body.courseId ? [...user.courses, req.body.courseId] : user.courses;
+
+    await user.save();
+    res.status(200).json({user: user});
+
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
