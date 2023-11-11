@@ -36,4 +36,6 @@ router.get('/verify/:token', isAuth, userController.verify);
 
 router.put('/update', isAuth, userController.update);
 
+router.get('/details', isAuth, userController.details);
+
 module.exports = router;

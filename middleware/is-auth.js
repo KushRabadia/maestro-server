@@ -11,6 +11,12 @@ module.exports = (req, res, next) => {
   let decodedToken;
   try {
     decodedToken = jwt.verify(token, process.env.MAESTRO_AI_JWT_SECRET);
+    const isTokenExpired = Date.now() >= decodedToken.exp * 1000;
+    if (isTokenExpired) {
+      const error = new Error("Token expired. Please log in again.");
+      error.statusCode = 401;
+      throw error;
+    }
   } catch (err) {
     err.statusCode = 500;
     throw err;
