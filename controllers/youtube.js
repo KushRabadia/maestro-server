@@ -17,6 +17,7 @@ exports.getLink = (req, res, next) => {
 
 exports.getSearch = async (req, res, next) => {
   try {
+    const authHeader = req.get("Authorization");
     const searchQuery = req.query.search_query;
     const searchPlaylists = await youtube.search.list({
       part: "snippet",
@@ -44,6 +45,15 @@ exports.getSearch = async (req, res, next) => {
 
       const playlistId = courseData.playlistId;
       const courseId = response.data.course.id;
+      
+      const userData = { courseId: courseId }
+
+      await axios.put(`${apiUrl}user/update`, userData, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": authHeader
+        },
+      });
 
       let allPlaylistItems = [];
       let nextPageToken = null;
