@@ -1,11 +1,11 @@
-const express = require("express");
+const express = require('express')
 
-const VideoController = require("../controllers/video");
+const VideoController = require('../controllers/video')
 
-const router = express.Router();
+const router = express.Router()
 
-router.post("", VideoController.createVideo);
+router.post('', VideoController.createVideo)
 
-router.post("/videos", VideoController.getVideos);
+router.post('/videos', VideoController.getVideos)
 
-module.exports = router;
+module.exports = router

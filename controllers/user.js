@@ -1,57 +1,65 @@
-const { validationResult } = require('express-validator');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
-const sgMail = require('@sendgrid/mail');
+const { validationResult } = require('express-validator')
+const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
+const crypto = require('crypto')
+const sgMail = require('@sendgrid/mail')
 
-const User = require('../models/user');
+const User = require('../models/user')
 
-sgMail.setApiKey("SG._7e4gfvfSwqWRXogjaWVUg.5W0lzD7L9f_-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");
+sgMail.setApiKey(
+  'SG._7e4gfvfSwqWRXogjaWVUg.5W0lzD7L9f_-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'
+)
 
 exports.createUser = async (req, res, next) => {
-  const errors = validationResult(req);
-  const email = req.body.email;
-  const name = req.body.name;
-  const password = req.body.password;
-  console.log(req.body);
+  const errors = validationResult(req)
+  const email = req.body.email
+  const name = req.body.name
+  const password = req.body.password
+  console.log(req.body)
   try {
     if (!errors.isEmpty()) {
-      const error = new Error(errors.array()[0].msg);
-      error.statusCode = 422;
-      error.data = errors.array();
-      throw error;
+      const error = new Error(errors.array()[0].msg)
+      error.statusCode = 422
+      error.data = errors.array()
+      throw error
     }
-    let user = await User.findOne({ email: email });
+    let user = await User.findOne({ email: email })
     if (user) {
-      const error = new Error('An account with this email address already exists.');
-      error.statusCode = 401;
-      throw error;
+      const error = new Error(
+        'An account with this email address already exists.'
+      )
+      error.statusCode = 401
+      throw error
     }
-    const hashedPw = await bcrypt.hash(password, 12);
+    const hashedPw = await bcrypt.hash(password, 12)
     user = new User({
       email: email,
       password: hashedPw,
       name: name,
-    });
-    let token;
-    crypto.randomBytes(32,async(err,buffer)=>{
-      if (err){
-        throw err;
+    })
+    let token
+    crypto.randomBytes(32, async (err, buffer) => {
+      if (err) {
+        throw err
       }
-      token = buffer.toString('hex');
-      user.token = token;
-      const result = await user.save();
+      token = buffer.toString('hex')
+      user.token = token
+      const result = await user.save()
       token = jwt.sign(
         {
           email: email,
-          userId: result._id.toString()
+          userId: result._id.toString(),
         },
         'wallgatekushrabadiawallgatekushrabadia',
         { expiresIn: '1h' }
-      );
-      delete user.password;
-      delete user.token;
-      res.status(201).json({ message: 'User created!', token:token, user: user});
+      )
+      delete user.password
+      delete user.token
+      res.status(201).json({
+        message: 'User created!',
+        token: token,
+        user: user,
+      })
     })
 
     // const msg = {
@@ -74,23 +82,23 @@ exports.createUser = async (req, res, next) => {
     // })
   } catch (err) {
     if (!err.statusCode) {
-      err.statusCode = 500;
+      err.statusCode = 500
     }
-    next(err);
+    next(err)
   }
-};
+}
 
 exports.loginUser = async (req, res, next) => {
-  const email = req.body.email;
-  const password = req.body.password;
-  console.log(req.body);
+  const email = req.body.email
+  const password = req.body.password
+  console.log(req.body)
 
   try {
-    const user = await User.findOne({ email: email });
+    const user = await User.findOne({ email: email })
     if (!user) {
-      const error = new Error('A user with this email could not be found.');
-      error.statusCode = 404;
-      throw error;
+      const error = new Error('A user with this email could not be found.')
+      error.statusCode = 404
+      throw error
     }
 
     // if (user.graphDomain) {
@@ -99,47 +107,51 @@ exports.loginUser = async (req, res, next) => {
     //   throw error;
     // }
 
-    const isEqual = await bcrypt.compare(password, user.password);
+    const isEqual = await bcrypt.compare(password, user.password)
     if (!isEqual) {
-      const error = new Error('Please check your password again.');
-      error.statusCode = 401;
-      throw error;
+      const error = new Error('Please check your password again.')
+      error.statusCode = 401
+      throw error
     }
     const token = jwt.sign(
       {
         email: email,
-        userId: user._id.toString()
+        userId: user._id.toString(),
       },
       'maestroaijwtsecret',
       { expiresIn: '1h' }
-    );
-    delete user.password;
-    res.status(200).json({ message: 'User logged in!',token: token, user: user});
+    )
+    delete user.password
+    res.status(200).json({
+      message: 'User logged in!',
+      token: token,
+      user: user,
+    })
   } catch (err) {
     console.log(err)
     if (!err.statusCode) {
-      err.statusCode = 500;
+      err.statusCode = 500
     }
-    next(err);
+    next(err)
   }
-};
+}
 
 exports.loginUserSocial = async (req, res, next) => {
-  const name = req.body.name;
-  const email = req.body.email;
-  const imageUrl = req.body.imageUrl;
-  const graphDomain = req.body.graphDomain;
-  const verified = "true";
+  const name = req.body.name
+  const email = req.body.email
+  const imageUrl = req.body.imageUrl
+  const graphDomain = req.body.graphDomain
+  const verified = 'true'
   try {
-    let user = await User.findOne({ email: email });
+    let user = await User.findOne({ email: email })
 
     if (user) {
-      if (!user.graphDomain){
-        user.name = name;
-        user.password = undefined;
-        user.verified = verified;
-        user.imageUrl = imageUrl;
-        user.graphDomain = graphDomain;
+      if (!user.graphDomain) {
+        user.name = name
+        user.password = undefined
+        user.verified = verified
+        user.imageUrl = imageUrl
+        user.graphDomain = graphDomain
       }
     } else {
       user = new User({
@@ -148,54 +160,58 @@ exports.loginUserSocial = async (req, res, next) => {
         verified: verified,
         imageUrl: imageUrl,
         graphDomain: graphDomain,
-      });
+      })
     }
 
     const token = jwt.sign(
       {
         email: email,
-        userId: user._id.toString()
+        userId: user._id.toString(),
       },
       'wallgatekushrabadiawallgatekushrabadia',
       { expiresIn: '1h' }
-    );
+    )
 
-    await user.save();
+    await user.save()
 
-    res.status(200).json({ message: 'User logged in!',token: token, user: user});
+    res.status(200).json({
+      message: 'User logged in!',
+      token: token,
+      user: user,
+    })
   } catch (err) {
     if (!err.statusCode) {
-      err.statusCode = 500;
+      err.statusCode = 500
     }
-    next(err);
+    next(err)
   }
-};
+}
 
 exports.verify = async (req, res, next) => {
-  const userId = req.userId;
-  const token = req.params.token;
+  const userId = req.userId
+  const token = req.params.token
   try {
-    const user = await User.findOne({ _id: userId },{orders:0, password:0});
+    const user = await User.findOne({ _id: userId }, { orders: 0, password: 0 })
     if (!user) {
-      const error = new Error('User could not be found.');
-      error.statusCode = 401;
-      throw error;
+      const error = new Error('User could not be found.')
+      error.statusCode = 401
+      throw error
     }
-    if(token === user.token){
-      user.verified = "true"
-      user.token = undefined;
+    if (token === user.token) {
+      user.verified = 'true'
+      user.token = undefined
     } else {
-      const error = new Error('Invalid token!');
-      error.statusCode = 404;
-      throw error;
+      const error = new Error('Invalid token!')
+      error.statusCode = 404
+      throw error
     }
-    await user.save();
-    user.token = undefined;
-    res.status(200).json({message: "Verification success!",user : user});
+    await user.save()
+    user.token = undefined
+    res.status(200).json({ message: 'Verification success!', user: user })
   } catch (err) {
     if (!err.statusCode) {
-      err.statusCode = 500;
+      err.statusCode = 500
     }
-    next(err);
+    next(err)
   }
-};
+}

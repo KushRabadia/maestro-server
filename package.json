@@ -23,5 +23,8 @@
     "multer": "^1.4.5-lts.1",
     "serve-index": "^1.9.1"
   },
-  "proxy": "http://localhost:3000"
+  "proxy": "http://localhost:3000",
+  "devDependencies": {
+    "prettier": "3.0.3"
+  }
 }
