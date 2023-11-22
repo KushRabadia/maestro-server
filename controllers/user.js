@@ -261,7 +261,7 @@ exports.update = async (req, res, next) => {
     user.courses = req.body.courseId ? [...user.courses, req.body.courseId] : user.courses;
 
     await user.save();
-    res.status(200).json({user: user});
+    res.status(200).json({ message: "User updated!", user: user });
 
   } catch (err) {
     if (!err.statusCode) {
