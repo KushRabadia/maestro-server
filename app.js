@@ -8,6 +8,7 @@ const youtubeRoutes = require("./routes/youtube");
 const courseRoutes = require("./routes/course");
 const videoRoutes = require("./routes/video");
 const userRoutes = require("./routes/user");
+const openaiRoutes = require("./routes/openai");
 
 const SERVER_PORT = process.env.SERVER_PORT;
 const username = encodeURIComponent(process.env.MONGO_USERNAME);
@@ -36,6 +37,7 @@ app.use("/api/youtube", youtubeRoutes);
 app.use("/api/course", courseRoutes);
 app.use("/api/video", videoRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/openai", openaiRoutes);
 
 app.use((req, res, next) => {
   const error = new HttpError("Could not find this route.", 404);

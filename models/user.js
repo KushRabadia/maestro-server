@@ -37,6 +37,9 @@ const userSchema = new Schema({
   verified: {
     type: String
   },
+  registerType: {
+    type: String
+  },
   courses: [
     {
       type: Schema.Types.ObjectId,

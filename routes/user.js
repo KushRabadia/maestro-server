@@ -30,7 +30,7 @@ router.post(
 
 router.post('/login', upload.none(), userController.loginUser);
 
-router.post('/login/social', userController.loginUserSocial);
+router.post('/login/social', upload.none(), userController.loginUserSocial);
 
 router.get('/verify/:token', isAuth, userController.verify);
 

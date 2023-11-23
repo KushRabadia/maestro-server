@@ -35,6 +35,7 @@ exports.createUser = async (req, res, next) => {
       email: email,
       password: hashedPw,
       name: name,
+      registerType: 'local'
     });
     let token;
     crypto.randomBytes(32, async (err, buffer) => {
@@ -165,26 +166,24 @@ exports.loginUserSocial = async (req, res, next) => {
   const name = req.body.name;
   const email = req.body.email;
   const imageUrl = req.body.imageUrl;
-  const graphDomain = req.body.graphDomain;
+  const registerType = "google";
   const verified = "true";
   try {
     let user = await User.findOne({ email: email });
 
     if (user) {
-      if (!user.graphDomain) {
-        user.name = name;
-        user.password = undefined;
-        user.verified = verified;
-        user.imageUrl = imageUrl;
-        user.graphDomain = graphDomain;
-      }
+      user.name = name;
+      user.password = undefined;
+      user.verified = verified;
+      user.imageUrl = imageUrl;
+      user.registerType = registerType;
     } else {
       user = new User({
         email: email,
         name: name,
         verified: verified,
         imageUrl: imageUrl,
-        graphDomain: graphDomain,
+        registerType: registerType,
       });
     }
 
@@ -262,7 +261,7 @@ exports.update = async (req, res, next) => {
     user.courses = req.body.courseId ? [...user.courses, req.body.courseId] : user.courses;
 
     await user.save();
-    res.status(200).json({user: user});
+    res.status(200).json({ message: "User updated!", user: user });
 
   } catch (err) {
     if (!err.statusCode) {
